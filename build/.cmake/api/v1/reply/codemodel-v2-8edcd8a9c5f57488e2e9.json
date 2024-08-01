@@ -1,0 +1,78 @@
+{
+	"configurations" : 
+	[
+		{
+			"directories" : 
+			[
+				{
+					"build" : ".",
+					"jsonFile" : "directory-.-Debug-d0094a50bb2071803777.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.16"
+					},
+					"projectIndex" : 0,
+					"source" : ".",
+					"targetIndexes" : 
+					[
+						0,
+						1,
+						2
+					]
+				}
+			],
+			"name" : "Debug",
+			"projects" : 
+			[
+				{
+					"directoryIndexes" : 
+					[
+						0
+					],
+					"name" : "RandomGenerator",
+					"targetIndexes" : 
+					[
+						0,
+						1,
+						2
+					]
+				}
+			],
+			"targets" : 
+			[
+				{
+					"directoryIndex" : 0,
+					"id" : "RandomGenerator::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-RandomGenerator-Debug-6696c3d3be41a07cf512.json",
+					"name" : "RandomGenerator",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "RandomGenerator_autogen::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-RandomGenerator_autogen-Debug-4f3b80f653089de58240.json",
+					"name" : "RandomGenerator_autogen",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "RandomGenerator_autogen_timestamp_deps::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-RandomGenerator_autogen_timestamp_deps-Debug-71d7dc8d028751e828b2.json",
+					"name" : "RandomGenerator_autogen_timestamp_deps",
+					"projectIndex" : 0
+				}
+			]
+		}
+	],
+	"kind" : "codemodel",
+	"paths" : 
+	{
+		"build" : "C:/Users/jeong/Desktop/RandomGenerator/build",
+		"source" : "C:/Users/jeong/Desktop/RandomGenerator"
+	},
+	"version" : 
+	{
+		"major" : 2,
+		"minor" : 6
+	}
+}
