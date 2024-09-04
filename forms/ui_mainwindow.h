@@ -6,6 +6,7 @@
 #include <QtGui/QIcon>
 #include <QtWidgets/QApplication>
 #include <QtWidgets/QComboBox>
+#include <QtWidgets/QCheckBox>
 #include <QtWidgets/QMainWindow>
 #include <QtWidgets/QMenu>
 #include <QtWidgets/QMenuBar>
@@ -27,6 +28,7 @@ public:
     QPlainTextEdit *lengthEdit;
     QTextEdit *resultTextEdit;
     QComboBox *comboBox;
+    QCheckBox *duplicateCheckBox;
     QMenuBar *menubar;
     QMenu *menuMode;
     QMenu *menuAbout;
@@ -50,6 +52,7 @@ public:
 
         centralwidget = new QWidget(MainWindow);
         centralwidget->setObjectName("centralwidget");
+
         pushButton = new QPushButton(centralwidget);
         pushButton->setObjectName("pushButton");
         pushButton->setGeometry(QRect(200, 150, 171, 61));
@@ -72,6 +75,7 @@ public:
                                                     "    color: #2c3e50; \n"
                                                     "}\n"
                                                     ""));
+
         minEdit = new QPlainTextEdit(centralwidget);
         minEdit->setObjectName("minEdit");
         minEdit->setGeometry(QRect(60, 10, 91, 31));
@@ -84,6 +88,13 @@ public:
         resultTextEdit = new QTextEdit(centralwidget);
         resultTextEdit->setObjectName("resultTextEdit");
         resultTextEdit->setGeometry(QRect(200, 20, 181, 101));
+        resultTextEdit->setReadOnly(1);
+
+        duplicateCheckBox = new QCheckBox(centralwidget);
+        duplicateCheckBox->setObjectName("duplicateCheckBox");
+        duplicateCheckBox->setGeometry(QRect(60, 170, 91, 31));
+        duplicateCheckBox->setChecked(false);
+
         comboBox = new QComboBox(centralwidget);
         comboBox->setObjectName("comboBox");
         comboBox->setGeometry(QRect(40, 140, 121, 22));
@@ -119,6 +130,8 @@ public:
         maxEdit->setPlaceholderText("Max num");
         lengthEdit->setPlaceholderText("Num");
         resultTextEdit->setPlaceholderText("Result is HERE!!!!");
+        duplicateCheckBox->setText("Duplicate");
+
         comboBox->setPlaceholderText("Select class");
         menuMode->setTitle("Menu");
         menuAbout->setTitle("About");
