@@ -1,30 +1,48 @@
-//
-// Created by jeong on 2024/7/1.
-//
-
-
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include <QDir>
 #include <QFileInfo>
-
+#include <QMessageBox>
+#include <unordered_set>
 
 MainWindow::MainWindow(QWidget *parent) :
         QMainWindow(parent), ui(new Ui::MainWindow) {
     ui->setupUi(this);
 
-    connect(this->ui->pushButton, &QPushButton::clicked, this, &MainWindow::onGenerateClicked);
-    connect(this->ui->actionExit, &QAction::triggered, this, &MainWindow::close);
+    QMetaObject::Connection pushButtonConnection = connect(this->ui->pushButton, &QPushButton::clicked, this,
+                                                           &MainWindow::onGenerateClicked);
+    if (!pushButtonConnection) {
+        qDebug() << "Failed to connect to the clicked signal of the push button.";
+    } else {
+        qDebug() << "Connected to the clicked signal of the push button.";
+    }
 
+    QMetaObject::Connection actionExitConnection = connect(this->ui->actionExit, &QAction::triggered, this,
+                                                           &MainWindow::close);
+    if (!actionExitConnection) {
+        qDebug() << "Failed to connect to the triggered signal of the action exit.";
+    } else {
+        qDebug() << "Connected to the triggered signal of the action exit.";
+    }
+
+    if (!initializeClassDirectory()) { // 文件夹初始化检查
+        QMessageBox::information(this, "Information", "Please set up your class directory correctly.");
+    }
+}
+
+MainWindow::~MainWindow() {
+    delete ui;
+}
+
+bool MainWindow::initializeClassDirectory() {
     QDir exeDir = QCoreApplication::applicationDirPath();
-
     QDir classDir(exeDir.filePath("class"));
 
     if (!classDir.exists()) {
         ui->comboBox->setPlaceholderText("No class folder");
         ui->resultTextEdit->setPlaceholderText(
                 "Please new class folder\nThis is only a recommendation\nYou can still use generator");
-        return;
+        return false;
     }
 
     QStringList filters;
@@ -35,77 +53,93 @@ MainWindow::MainWindow(QWidget *parent) :
         ui->comboBox->setPlaceholderText("No class file(s)");
         ui->resultTextEdit->setPlaceholderText(
                 "Please new class file(s)\nThis is only a recommendation\nYou can still use generator");
-        return;
+        return false;
     }
 
     Q_FOREACH(const QString &fileName, txtFiles) {
             QString baseName = QFileInfo(fileName).baseName();
             ui->comboBox->addItem(baseName);
         }
-}
-
-MainWindow::~MainWindow() {
-    delete ui;
+    return true;
 }
 
 void MainWindow::onGenerateClicked() {
     ui->resultTextEdit->clear();
 
-    int minVal = ui->minEdit->toPlainText().toInt();
-    int maxVal = ui->maxEdit->toPlainText().toInt();
-    int length = ui->lengthEdit->toPlainText().toInt();
+    bool ok;
+    qint64 minVal = ui->minEdit->toPlainText().toInt(&ok);
+    if (!ok || minVal > 1000) { // 假设输入上限为1000，具体值根据实际情况调整
+        QMessageBox::warning(this, "Warning", "Please enter a valid minimum value.");
+        return;
+    }
 
-    bool isSequence = true;
-    auto result = generateRandomNumbers(isSequence, minVal, maxVal, length);
+    qint64 maxVal = ui->maxEdit->toPlainText().toInt(&ok);
+    if (!ok || maxVal < 0 || maxVal < minVal) {
+        QMessageBox::warning(this, "Warning", "Please enter a valid maximum value greater than the minimum value.");
+        return;
+    }
+
+    qint64 length = ui->lengthEdit->toPlainText().toInt(&ok);
+    if (!ok || length <= 0) {
+        QMessageBox::warning(this, "Warning", "Please enter a valid positive length.");
+        return;
+    }
+
+    bool isSequence = (length > 1);
+    bool allowDuplicates = ui->duplicateCheckBox->isChecked();
+
+    auto result = generateRandomNumbers(isSequence, allowDuplicates, minVal, maxVal, length);
     displayRandomNumbers(result, this->ui);
-
 }
 
-std::variant<QVector<int>, int>
-MainWindow::generateRandomNumbers(bool isSequence, int minVal = 0, int maxVal = 100, int length = 0) {
-    QRandomGenerator generator;
+
+std::variant<QVector<qint64>, qint64>
+MainWindow::generateRandomNumbers(bool isSequence, bool allowDuplicates, qint64 minVal, qint64 maxVal, qint64 length) {
+    QRandomGenerator64 *generator = QRandomGenerator64::global();
 
     if (isSequence) {
-        // 如果 isSequence 为 true，生成一个数列
-        QVector<int> sequence;
-        if (length > 0) {
-            sequence.reserve(length); // 预分配空间以提高性能
-            for (int i = 0; i < length; ++i) {
-                int randomNumber = minVal + generator.bounded(minVal, maxVal + 1) - minVal;
-                sequence.append(randomNumber);
+        QVector<qint64> sequence;
+        try {
+            if (allowDuplicates) {
+                sequence.reserve(length);
+                for (qint64 i = 0; i < length; ++i) {
+                    sequence.push_back(generator->bounded(minVal, maxVal + 1));
+                }
             }
+        } catch (const std::exception &e) {
+            // 理论上，这里的异常应该很少见，但为了代码健壮性，最好进行处理
+            qDebug() << "Exception in generating random sequence numbers:" << e.what();
+            return QVector<qint64>(); // 返回空的sequence
         }
         return sequence;
     } else {
-        // 如果 isSequence 为 false，只生成一个随机数
-        int randomNumber = minVal + generator.bounded(minVal, maxVal + 1) - minVal;
+        qint64 randomNumber = 0;
+        try {
+            randomNumber = generator->bounded(minVal, maxVal + 1);
+        } catch (const std::exception &e) {
+            qDebug() << "Exception in generating random number:" << e.what();
+            return randomNumber; // 返回空的sequence
+        }
         return randomNumber;
     }
 }
 
-void MainWindow::displayRandomNumbers(const std::variant<QVector<int>, int> &result, Ui::MainWindow *ui) {
+
+void MainWindow::displayRandomNumbers(const std::variant<QVector<qint64>, qint64> &result, Ui::MainWindow *ui) {
     QString displayText;
 
-    if (std::holds_alternative<QVector<int>>(result)) {
-        // 如果结果是 QVector<int>
-        QVector<int> sequence = std::get<QVector<int>>(result);
-        for (int i = 0; i < sequence.size(); ++i) {
+    if (std::holds_alternative<QVector<qint64>>(result)) {
+        QVector<qint64> sequence = std::get<QVector<qint64>>(result);
+        for (qint64 i = 0; i < sequence.size(); ++i) {
             displayText += QString::number(sequence[i]);
             if (i < sequence.size() - 1) {
-                displayText += ", ";  // 在数列元素之间添加逗号和空格
+                displayText += ", ";
             }
         }
     } else {
-        // 如果结果是 int
-        int randomNumber = std::get<int>(result);
+        qint64 randomNumber = std::get<qint64>(result);
         displayText = QString::number(randomNumber);
     }
 
-    // 将最终的字符串添加到 QTextEdit 中
     ui->resultTextEdit->append(displayText);
 }
-
-
-
-
-
