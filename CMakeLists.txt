@@ -16,15 +16,16 @@ find_package(Qt6 COMPONENTS
         Widgets
         REQUIRED)
 
+#main
 INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/include ${PROJECT_SOURCE_DIR}/forms)
 
 FILE(GLOB_RECURSE RC_FILES ${PROJECT_SOURCE_DIR}/resources/*.rc)
 FILE(GLOB_RECURSE QRC_FILES ${PROJECT_SOURCE_DIR}/resources/*.qrc)
 FILE(GLOB_RECURSE UI_FILES ${PROJECT_SOURCE_DIR}/forms/*.ui)
 FILE(GLOB_RECURSE HEADER_FILES ${PROJECT_SOURCE_DIR}/include/*.h*)
-aux_source_directory(${PROJECT_SOURCE_DIR}/sources SRC_FILES)
+FILE(GLOB_RECURSE SRC_FILES ${PROJECT_SOURCE_DIR}/sources/*.c*)
 
-add_executable(${PROJECT_NAME} WIN32
+add_executable(${PROJECT_NAME}
         main.cpp
         ${RC_FILES}
         ${QRC_FILES}
