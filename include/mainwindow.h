@@ -30,9 +30,12 @@ private:
 
     Ui::MainWindow *ui;
 
-    static std::variant<QVector<int>, int> generateRandomNumbers(bool iSequence, int minVal, int maxVal, int length);
+    static std::variant<QVector<qint64>, qint64>
+    generateRandomNumbers(bool iSequence, bool allowDuplicates, qint64 minVal, qint64 maxVal, qint64 length);
 
-    static void displayRandomNumbers(const std::variant<QVector<int>, int> &result, Ui::MainWindow *ui);
+    static void displayRandomNumbers(const std::variant<QVector<qint64>, qint64> &result, Ui::MainWindow *ui);
+
+    bool initializeClassDirectory();
 };
 
 
